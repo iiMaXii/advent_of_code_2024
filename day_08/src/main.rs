@@ -16,7 +16,7 @@ use std::{collections::HashSet, fs};
 
 #[derive(Debug)]
 struct Antenna {
-    c: char,
+    frequency: char,
     x: i32,
     y: i32,
 }
@@ -34,12 +34,12 @@ fn read_puzzle_input(filename: &str) -> Map {
     let mut antennas = Vec::new();
 
     for (y, line) in contents.split('\n').enumerate() {
-        for (x, c) in line.chars().enumerate() {
-            match c {
+        for (x, frequency) in line.chars().enumerate() {
+            match frequency {
                 '.' => (),
                 'a'..='z' | 'A'..='Z' | '0'..='9' => {
                     antennas.push(Antenna {
-                        c,
+                        frequency,
                         x: x as i32,
                         y: y as i32,
                     });
@@ -104,15 +104,15 @@ fn get_antinodes(map: &Map, first: &Antenna, second: &Antenna) -> Vec<(i32, i32)
 }
 
 // Antinodes for part 2
-fn get_antinodes_2(map: &Map, antenna: &Antenna, other_antenna: &Antenna) -> Vec<(i32, i32)> {
-    let delta_x = other_antenna.x - antenna.x;
-    let delta_y = other_antenna.y - antenna.y;
+fn get_antinodes_2(map: &Map, first: &Antenna, second: &Antenna) -> Vec<(i32, i32)> {
+    let delta_x = second.x - first.x;
+    let delta_y = second.y - first.y;
 
     let mut antinodes = Vec::new();
 
     // Go backwards
-    let mut x = antenna.x;
-    let mut y = antenna.y;
+    let mut x = first.x;
+    let mut y = first.y;
     while 0 <= x && x < map.width && 0 <= y && y < map.height {
         antinodes.push((x, y));
         x -= delta_x;
@@ -120,8 +120,8 @@ fn get_antinodes_2(map: &Map, antenna: &Antenna, other_antenna: &Antenna) -> Vec
     }
 
     // Go forwards
-    let mut x = antenna.x + delta_x;
-    let mut y = antenna.y + delta_y;
+    let mut x = first.x + delta_x;
+    let mut y = first.y + delta_y;
     while 0 <= x && x < map.width && 0 <= y && y < map.height {
         antinodes.push((x, y));
         x += delta_x;
@@ -139,7 +139,7 @@ fn main() {
 
     for (index, first_antenna) in map.antennas.iter().enumerate() {
         for second_antenna in map.antennas.iter().skip(index + 1) {
-            if first_antenna.c == second_antenna.c {
+            if first_antenna.frequency == second_antenna.frequency {
                 let antinodes = get_antinodes(&map, first_antenna, second_antenna);
                 for antinode in antinodes {
                     unique_locations.insert(antinode);
@@ -155,10 +155,10 @@ fn main() {
     // Part 2
     let mut unique_locations = HashSet::new();
 
-    for (index, antenna) in map.antennas.iter().enumerate() {
-        for other_antenna in map.antennas.iter().skip(index + 1) {
-            if antenna.c == other_antenna.c {
-                let antinodes = get_antinodes_2(&map, antenna, other_antenna);
+    for (index, first_antenna) in map.antennas.iter().enumerate() {
+        for second_antenna in map.antennas.iter().skip(index + 1) {
+            if first_antenna.frequency == second_antenna.frequency {
+                let antinodes = get_antinodes_2(&map, first_antenna, second_antenna);
                 for antinode in antinodes {
                     unique_locations.insert(antinode);
                 }
